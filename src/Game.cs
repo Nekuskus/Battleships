@@ -3,6 +3,10 @@ public record struct Point(int X, int Y);
 
 static class Extensions
 {
+
+
+    // Print extension methods
+
     public static string Print(this Battleships.BoxStatus box)
     {
         if (box == Battleships.BoxStatus.Unknown) return " ";
@@ -91,6 +95,9 @@ static class Extensions
 }
 class Battleships
 {
+
+    // Public enums
+
     public enum BoxStatus
     {
         Unknown, // ' '
@@ -99,9 +106,21 @@ class Battleships
         ShotHit // 'X'
     }
 
+    public enum ShotReturn
+    {
+        ShotMissed,
+        ShotHit
+    }
+
+
+    // Private fields
 
     private BoxStatus[,] _fieldPlayer;
     private BoxStatus[,] _fieldOpponent;
+
+
+    // Public properties
+
     public BoxStatus[,] FieldPlayer
     {
         get => _fieldPlayer;
@@ -110,6 +129,9 @@ class Battleships
     {
         get => _fieldOpponent;
     }
+
+
+    // Game initialization methods
 
     public void PlaceShipPlayer(Point start, Point end)
     {
@@ -132,7 +154,6 @@ class Battleships
                 _fieldPlayer[x, start.Y] = BoxStatus.ShipBox;
             }
         }
-        
     }
     public void PlaceShipOpponent(Point start, Point end)
     {
@@ -155,8 +176,25 @@ class Battleships
                 _fieldOpponent[x, start.Y] = BoxStatus.ShipBox;
             }
         }
-        
     }
+
+
+    // Player methods
+
+    public ShotReturn TryShoot(Point p)
+    {
+        if (_fieldOpponent[p.X, p.Y] == BoxStatus.ShipBox) {
+            _fieldOpponent[p.X, p.Y] = BoxStatus.ShotHit;
+        } 
+    }
+
+    public void EnemyShot(Point p)
+    {
+
+    }
+
+
+    // Constructor
 
     public Battleships(int x = 10, int y = 10)
     {
