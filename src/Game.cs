@@ -133,8 +133,29 @@ class Battleships
             }
         }
         
-        Console.WriteLine(FieldPlayer.Print());
-        Console.WriteLine(FieldOpponent.Print());
+    }
+    public void PlaceShipOpponent(Point start, Point end)
+    {
+        if ((start.X == end.X && start.Y == end.Y) || (start.X != end.X && start.Y != end.Y))
+            throw new ArgumentException("Ship start and end must align in one dimension.");
+
+        if (start.X == end.X)
+        {
+            if (start.Y > end.Y) (start.Y, end.Y) = (end.Y, start.Y);
+            for (int y = start.Y; y <= end.Y; y++)
+            {
+                _fieldOpponent[start.X, y] = BoxStatus.ShipBox;
+            }
+        }
+        else
+        { // if(start.Y == end.Y) {
+            if (start.X > end.X) (start.X, end.X) = (end.X, start.X);
+            for (int x = start.X; x <= end.X; x++)
+            {
+                _fieldOpponent[x, start.Y] = BoxStatus.ShipBox;
+            }
+        }
+        
     }
 
     public Battleships(int x = 10, int y = 10)
