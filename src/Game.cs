@@ -1,5 +1,6 @@
 using System.Text;
 public record struct Point(int X, int Y);
+// Add turn counter, isPlayerTurn flipping, removePrintChecking argument, powerUps (artillery! hits 5 random fields; moveship! probably won't implement; gain a (1) ship!), traps (lose a turn!)
 
 static class Extensions
 {
@@ -185,12 +186,25 @@ class Battleships
     {
         if (_fieldOpponent[p.X, p.Y] == BoxStatus.ShipBox) {
             _fieldOpponent[p.X, p.Y] = BoxStatus.ShotHit;
-        } 
+	    return ShotReturn.ShotHit;
+        } else {
+            _fieldOpponent[p.X, p.Y] = BoxStatus.ShotMiss;
+	    return ShotReturn.ShotMissed;
+	}
     }
 
-    public void EnemyShot(Point p)
+    public ShotReturn EnemyShot(Point p)
     {
-
+	if (_fieldPlayer[p.X, p.Y] == BoxStatus.
+ShipBox) {
+            _fieldPlayer[p.X, p.Y] = BoxStatus.S
+hotHit;
+            return ShotReturn.ShotHit;
+        } else {
+            _fieldPlayer[p.X, p.Y] = BoxStatus.S
+hotMiss;
+            return ShotReturn.ShotMissed;
+        }
     }
 
 
