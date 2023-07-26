@@ -3,7 +3,7 @@ using System.Linq;
 public record struct Point(int X, int Y);
 // removePrintChecking argument, powerUps (artillery! hits 5 random fields; moveship! probably won't implement; gain a (1) ship!), traps (lose a turn!)
 
-static class Extensions
+static partial class Extensions
 {
 
 
