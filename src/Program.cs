@@ -1,6 +1,6 @@
 using System.IO;
-record struct MenuItem(string text, ItemType type, int value);
-enum ItemType { Switch, Numeric, Exit }
+record struct MenuItem(string text, ItemType type, string value);
+enum ItemType { Switch, Numeric, Text, Exit }
 
 static partial class Extensions
 {
@@ -9,8 +9,10 @@ static partial class Extensions
         switch (item.type)
         {
             case ItemType.Switch:
-                return item.text + ' ' + (item.value == 1 ? '✔' : '✘');
+                return item.text + ' ' + (item.value == "1" ? '✔' : '✘');
             case ItemType.Numeric:
+                return item.text + ' ' + item.value;
+            case ItemType.Text:
                 return item.text + ' ' + item.value;
             case ItemType.Exit:
                 return item.text;
@@ -174,7 +176,7 @@ class Program
                         Console.CursorLeft = 1;
                         Console.Write(new String(' ', Console.BufferWidth - 1));
                         Console.CursorLeft = 1;
-                        options[offset].value += 1;
+                        options[offset].value = (int.Parse(options[offset].value) + 1).ToString();
                         Console.Write(options[offset].Print());
                     }
                     break;
@@ -184,7 +186,7 @@ class Program
                         Console.CursorLeft = 1;
                         Console.Write(new String(' ', Console.BufferWidth - 1));
                         Console.CursorLeft = 1;
-                        options[offset].value -= 1;
+                        options[offset].value = (int.Parse(options[offset].value) - 1).ToString();
                         Console.Write(options[offset].Print());
 
                     }
@@ -192,7 +194,7 @@ class Program
                 case ConsoleKey.Enter:
                     if (options[offset].type == ItemType.Switch)
                     {
-                        options[offset].value = (options[offset].value == 0 ? 1 : 0);
+                        options[offset].value = (options[offset].value == "0" ? "1" : "0");
                         Console.CursorLeft = 1;
                         Console.Write(options[offset].Print());
                         Console.CursorLeft = 0;
@@ -228,9 +230,9 @@ class Program
         Console.WriteLine("Main menu");
         Console.Write("\n\n\n");
         var options = new MenuItem[] {
-            new MenuItem("Start game", ItemType.Exit, 0),
-            new MenuItem("Default options", ItemType.Exit, 0),
-            new MenuItem("Exit game", ItemType.Exit, 0)
+            new MenuItem("Start game", ItemType.Exit, "0"),
+            new MenuItem("Default options", ItemType.Exit, "0"),
+            new MenuItem("Exit game", ItemType.Exit, "0")
         };
         (var newOptions, var selected) = CreateMenu(options, initpos);
 
@@ -252,6 +254,22 @@ class Program
 
     public static void DefaultOptionsMenu()
     {
+        Console.WriteLine("Default options");
+        Console.Write("\n\n\n");
+        var options = new MenuItem[] {
+            new MenuItem("PlayerName", ItemType.Text, "Player"),
+            new MenuItem("Ships4", ItemType.Numeric, "1"),
+            new MenuItem("Ships3", ItemType.Numeric, "2"),
+            new MenuItem("Ships2", ItemType.Numeric, "3"),
+            new MenuItem("Ships1", ItemType.Numeric, "4"),
+            new MenuItem("PowerUps", ItemType.Switch, "0"),
+            new MenuItem("Traps", ItemType.Switch, "0"),
+            new MenuItem("MineCount", ItemType.Numeric, "0"),
+            new MenuItem("Gain1Count", ItemType.Numeric, "0"),
+            new MenuItem("ArtilleryCount", ItemType.Numeric, "0"),
+            new MenuItem("ArmageddonCount", ItemType.Numeric, "0"),
+        };
+        (var newOptions, var selected) = CreateMenu(options);
         //save to options.ini
     }
 
