@@ -1,6 +1,7 @@
 using System.Text;
+using System.Linq;
 public record struct Point(int X, int Y);
-// Add turn counter, isPlayerTurn flipping, removePrintChecking argument, powerUps (artillery! hits 5 random fields; moveship! probably won't implement; gain a (1) ship!), traps (lose a turn!)
+// removePrintChecking argument, powerUps (artillery! hits 5 random fields; moveship! probably won't implement; gain a (1) ship!), traps (lose a turn!)
 
 static class Extensions
 {
@@ -93,12 +94,17 @@ static class Extensions
         sb.Append(" ]");
         return sb.ToString();
     }
+
+    public static IEnumerable<T> ToEnumerable<T>(this Array target)
+    {
+        foreach (var item in target)
+            yield return (T)item;
+    }
 }
 class Battleships
 {
 
-    // Public enums
-
+    #region Public enums
     public enum BoxStatus
     {
         Unknown, // ' '
@@ -110,17 +116,30 @@ class Battleships
     public enum ShotReturn
     {
         ShotMissed,
-        ShotHit
+        ShotHit,
+        PlayerWon,
+        OpponentWon
     }
 
+    #endregion
 
-    // Private fields
+    #region Private fields
 
     private BoxStatus[,] _fieldPlayer;
     private BoxStatus[,] _fieldOpponent;
+    private readonly bool _powerUps;
+    private readonly bool _traps;
+    private bool _isPlayerTurn;
+    private uint _turnCounter;
+    private readonly bool _isPlayerFirst;
+    private readonly uint _fieldX;
+    private readonly uint _fieldY;
 
+    private bool _isGameOver;
 
-    // Public properties
+    #endregion
+
+    #region Public properties
 
     public BoxStatus[,] FieldPlayer
     {
@@ -130,14 +149,53 @@ class Battleships
     {
         get => _fieldOpponent;
     }
+    public bool IsPlayerTurn
+    {
+        private set => _isPlayerTurn = value;
+        get => _isPlayerTurn;
+    }
+    public bool IsPlayerFirst
+    {
+        get => _isPlayerTurn;
+    }
+    public bool HasPowerUps
+    {
+        get => _powerUps;
+    }
+    public bool HasTraps
+    {
+        get => _traps;
+    }
+    public uint TurnCounter
+    {
+        private set => _turnCounter = value;
+        get => _turnCounter;
+    }
+    public bool IsGameOver
+    {
+        private set => _isGameOver = value;
+        get => _isGameOver;
+    }
+    public uint FieldX
+    {
+        get => _fieldX;
+    }
+    public uint FieldY
+    {
+        get => _fieldY;
+    }
+    #endregion
 
-
-    // Game initialization methods
+    #region Game initialization methods
 
     public void PlaceShipPlayer(Point start, Point end)
     {
+        Valid(start);
+        Valid(end);
         if ((start.X == end.X && start.Y == end.Y) || (start.X != end.X && start.Y != end.Y))
             throw new ArgumentException("Ship start and end must align in one dimension.");
+
+        if (IsGameOver) throw new InvalidOperationException("Ships cannot be placed if the game is over");
 
         if (start.X == end.X)
         {
@@ -158,8 +216,12 @@ class Battleships
     }
     public void PlaceShipOpponent(Point start, Point end)
     {
+        Valid(start);
+        Valid(end);
         if ((start.X == end.X && start.Y == end.Y) || (start.X != end.X && start.Y != end.Y))
             throw new ArgumentException("Ship start and end must align in one dimension.");
+
+        if (IsGameOver) throw new InvalidOperationException("Ships cannot be placed if the game is over");
 
         if (start.X == end.X)
         {
@@ -179,39 +241,129 @@ class Battleships
         }
     }
 
+    #endregion
 
-    // Player methods
+    #region Player methods
 
     public ShotReturn TryShoot(Point p)
     {
-        if (_fieldOpponent[p.X, p.Y] == BoxStatus.ShipBox) {
+        Valid(p);
+        if (!IsPlayerTurn) throw new InvalidOperationException("A player can't move during the other player's turn.");
+        if (IsGameOver) throw new InvalidOperationException("Shots cannot be made after the game is over.");
+
+        if (_fieldOpponent[p.X, p.Y] == BoxStatus.ShipBox)
+        {
             _fieldOpponent[p.X, p.Y] = BoxStatus.ShotHit;
-	    return ShotReturn.ShotHit;
-        } else {
+            if (_endTurn()) return ShotReturn.ShotHit;
+            else return ShotReturn.PlayerWon;
+        }
+        else
+        {
             _fieldOpponent[p.X, p.Y] = BoxStatus.ShotMiss;
-	    return ShotReturn.ShotMissed;
-	}
+            if (_endTurn()) return ShotReturn.ShotMissed;
+            else throw new InvalidOperationException("This code should not be reached. This means you won the game by not shooting.");
+        }
     }
 
     public ShotReturn EnemyShot(Point p)
     {
-	if (_fieldPlayer[p.X, p.Y] == BoxStatus.
-ShipBox) {
-            _fieldPlayer[p.X, p.Y] = BoxStatus.S
-hotHit;
-            return ShotReturn.ShotHit;
-        } else {
-            _fieldPlayer[p.X, p.Y] = BoxStatus.S
-hotMiss;
-            return ShotReturn.ShotMissed;
+        Valid(p);
+        if (IsPlayerTurn) throw new InvalidOperationException("A player can't move during the other player's turn.");
+        if (IsGameOver) throw new InvalidOperationException("Shots cannot be made after the game is over.");
+
+        if (_fieldPlayer[p.X, p.Y] == BoxStatus.ShipBox)
+        {
+            _fieldPlayer[p.X, p.Y] = BoxStatus.ShotHit;
+            if (_endTurn()) return ShotReturn.ShotHit;
+            else return ShotReturn.OpponentWon;
+        }
+        else
+        {
+            _fieldPlayer[p.X, p.Y] = BoxStatus.ShotMiss;
+            if (_endTurn()) return ShotReturn.ShotMissed;
+            else throw new InvalidOperationException("This code should not be reached. This means your opponent won the game by not shooting.");
         }
     }
 
-
-    // Constructor
-
-    public Battleships(int x = 10, int y = 10)
+    private bool _endTurn()
     {
+        // Only advance turn counter if the second player of the turn has just finished
+        if (IsPlayerFirst && !IsPlayerTurn) _turnCounter += 1;
+        else if (!IsPlayerFirst && IsPlayerTurn) _turnCounter += 1;
+
+        if (IsPlayerTurn)
+        {
+            if (!Enumerable.Any(FieldOpponent.ToEnumerable<BoxStatus>(), (val) => val == BoxStatus.ShipBox))
+            {
+                // Player Win
+                _endGame();
+                return false;
+            }
+        }
+        else
+        {
+            if (!Enumerable.Any(FieldPlayer.ToEnumerable<BoxStatus>(), (val) => val == BoxStatus.ShipBox))
+            {
+                // Opponent Win
+                _endGame();
+                return false;
+            }
+        }
+
+        // Flip turn
+        IsPlayerTurn = !IsPlayerTurn;
+        return true;
+    }
+
+    private void _endGame()
+    {
+        IsGameOver = false;
+    }
+
+    public string GetPlayerFieldString()
+    {
+
+    }
+
+    public string GetOpponentFieldString()
+    {
+
+    }
+
+    public string PrintPlayerField()
+    {
+        Console.WriteLine(GetPlayerFieldString());
+    }
+
+    public string PrintOpponentField()
+    {
+        Console.WriteLine(GetOpponentFieldString());
+    }
+
+    public void PlayerPlaceMineTrap(Point p)
+    {
+        Valid(p);
+    }
+
+    public void OpponentPlaceMineTrap(Point p)
+    {
+        Valid(p);
+    }
+
+    public void Valid(Point p)
+    {
+        if(p.X >= FieldX || p.X < 0) throw new ArgumentOutOfRangeException($"The point's X field {p.X} is out of bounds.");
+        if(p.Y >= FieldY || p.Y < 0) throw new ArgumentOutOfRangeException($"The point's Y field {p.Y} is out of bounds.");
+    }
+
+    #endregion
+
+    #region Constructor
+
+    public Battleships(uint x = 10, uint y = 10, bool isPlayerFirst = true, bool powerUps = false, bool traps = false)
+    {
+        _fieldX = x;
+        _fieldY = y;
         _fieldPlayer = new BoxStatus[x, y];
         _fieldOpponent = new BoxStatus[x, y];
         for (int i = 0; i < x; i++)
@@ -222,5 +374,12 @@ hotMiss;
                 _fieldOpponent[i, j] = BoxStatus.Unknown;
             }
         }
+        _isPlayerFirst = isPlayerFirst;
+        _powerUps = powerUps;
+        _traps = traps;
+
+        _isGameOver = false;
     }
+
+    #endregion
 }
