@@ -1,6 +1,6 @@
 using System.IO;
 record struct MenuItem(string text, ItemType type, string value);
-enum ItemType { Switch, Numeric, Text, Exit }
+enum ItemType { Switch, Numeric, Text, Empty, Exit }
 
 static partial class Extensions
 {
@@ -16,6 +16,8 @@ static partial class Extensions
                 return item.text + ' ' + item.value;
             case ItemType.Exit:
                 return item.text;
+            case ItemType.Empty:
+                return "";
             default:
                 return item.text;
         }
@@ -24,17 +26,17 @@ static partial class Extensions
 
 public static class DefaultOptions
 {
-    public static string? PlayerName = null;
-    public static int? Ships4 = null;
-    public static int? Ships3 = null;
-    public static int? Ships2 = null;
-    public static int? Ships1 = null;
-    public static bool? PowerUps = null;
-    public static bool? Traps = null;
-    public static int? MineCount = null;
-    public static int? Gain1Count = null;
-    public static int? ArtilleryCount = null;
-    public static int? ArmageddonCount = null;
+    public static string PlayerName = "Player";
+    public static int Ships4 = 1;
+    public static int Ships3 = 2;
+    public static int Ships2 = 3;
+    public static int Ships1 = 4;
+    public static bool PowerUps = false;
+    public static bool Traps = false;
+    public static int MineCount = 0;
+    public static int Gain1Count = 0;
+    public static int ArtilleryCount = 0;
+    public static int ArmageddonCount = 0;
 
     public static void Save()
     {
@@ -65,7 +67,7 @@ public static class DefaultOptions
             {
                 while(!sr.EndOfStream)
                 {
-                    var line = sr.ReadLine().Split('=');
+                    var line = sr.ReadLine()!.Split('=');
                     switch (line[0])
                     {
                         case "PlayerName":
@@ -84,10 +86,10 @@ public static class DefaultOptions
                             DefaultOptions.Ships1 = int.Parse(line[1]);
                             break;
                         case "PowerUps":
-                            DefaultOptions.PowerUps = bool.Parse(line[1]);
+                            DefaultOptions.PowerUps = (line[1] == "1" ? true : false);
                             break;
                         case "Traps":
-                            DefaultOptions.Traps = bool.Parse(line[1]);
+                            DefaultOptions.Traps = (line[1] == "1" ? true : false);
                             break;
                         case "MineCount":
                             DefaultOptions.MineCount = int.Parse(line[1]);
@@ -120,8 +122,9 @@ class Program
     }
     public static void Main(string[] args)
     {
+        Console.CursorVisible = false;
         Console.WriteLine("Battleships v0.01");
-        if(File.Exists("options.txt")) DefaultOptions.Load();
+        if(File.Exists("options.ini")) DefaultOptions.Load();
         MainMenu();
     }
 
@@ -129,7 +132,7 @@ class Program
     {
         if(!(initialPos < options.Length)) throw new ArgumentOutOfRangeException("Initial cursor position out of bounds.");
 
-        Console.CursorVisible = false;
+        
         int offset = initialPos;
         // Write options
         for (int i = 0; i < options.Length - 1; i++)
@@ -155,9 +158,17 @@ class Program
                     {
                         Console.SetCursorPosition(0, Console.CursorTop);
                         Console.Write(' ');
-                        Console.SetCursorPosition(0, Console.CursorTop - 1);
+                        if (offset - 2 >= 0 && options[offset - 1].type == ItemType.Empty)
+                        {
+                            Console.SetCursorPosition(0, Console.CursorTop - 2);
+                            offset -= 2;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(0, Console.CursorTop - 1);
+                            offset -= 1;
+                        }
                         Console.Write('>');
-                        offset -= 1;
                     }
                     break;
                 case ConsoleKey.DownArrow:
@@ -165,16 +176,24 @@ class Program
                     {
                         Console.SetCursorPosition(0, Console.CursorTop);
                         Console.Write(' ');
-                        Console.SetCursorPosition(0, Console.CursorTop + 1);
+                        if (offset + 2 < options.Length && options[offset + 1].type == ItemType.Empty)
+                        {
+                            Console.SetCursorPosition(0, Console.CursorTop + 2);
+                            offset += 2;
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(0, Console.CursorTop + 1);
+                            offset += 1;
+                        }
                         Console.Write('>');
-                        offset += 1;
                     }
                     break;
                 case ConsoleKey.RightArrow:
                     if (options[offset].type == ItemType.Numeric)
                     {
                         Console.CursorLeft = 1;
-                        Console.Write(new String(' ', Console.BufferWidth - 1));
+                        Console.Write(new String(' ', Console.BufferWidth - 2));
                         Console.CursorLeft = 1;
                         options[offset].value = (int.Parse(options[offset].value) + 1).ToString();
                         Console.Write(options[offset].Print());
@@ -184,7 +203,7 @@ class Program
                     if (options[offset].type == ItemType.Numeric)
                     {
                         Console.CursorLeft = 1;
-                        Console.Write(new String(' ', Console.BufferWidth - 1));
+                        Console.Write(new String(' ', Console.BufferWidth - 2));
                         Console.CursorLeft = 1;
                         options[offset].value = (int.Parse(options[offset].value) - 1).ToString();
                         Console.Write(options[offset].Print());
@@ -201,6 +220,8 @@ class Program
                     }
                     break;
                 default:
+                    Console.CursorLeft = 1;
+                    Console.Write(options[offset].Print());
                     break;
             }
             key = Console.ReadKey(false).Key;
@@ -217,8 +238,6 @@ class Program
 
         Console.WriteLine($"Selected option {offset + 1}: {options[offset].text}");
 
-
-        Console.CursorVisible = true;
 
         return (options, offset);
     }
@@ -257,20 +276,36 @@ class Program
         Console.WriteLine("Default options");
         Console.Write("\n\n\n");
         var options = new MenuItem[] {
-            new MenuItem("PlayerName", ItemType.Text, "Player"),
-            new MenuItem("Ships4", ItemType.Numeric, "1"),
-            new MenuItem("Ships3", ItemType.Numeric, "2"),
-            new MenuItem("Ships2", ItemType.Numeric, "3"),
-            new MenuItem("Ships1", ItemType.Numeric, "4"),
-            new MenuItem("PowerUps", ItemType.Switch, "0"),
-            new MenuItem("Traps", ItemType.Switch, "0"),
-            new MenuItem("MineCount", ItemType.Numeric, "0"),
-            new MenuItem("Gain1Count", ItemType.Numeric, "0"),
-            new MenuItem("ArtilleryCount", ItemType.Numeric, "0"),
-            new MenuItem("ArmageddonCount", ItemType.Numeric, "0"),
+            new MenuItem("PlayerName", ItemType.Text, DefaultOptions.PlayerName),
+            new MenuItem("Ships4", ItemType.Numeric, DefaultOptions.Ships4.ToString()),
+            new MenuItem("Ships3", ItemType.Numeric, DefaultOptions.Ships3.ToString()),
+            new MenuItem("Ships2", ItemType.Numeric, DefaultOptions.Ships2.ToString()),
+            new MenuItem("Ships1", ItemType.Numeric, DefaultOptions.Ships1.ToString()),
+            new MenuItem("PowerUps", ItemType.Switch, DefaultOptions.PowerUps.ToString()),
+            new MenuItem("Traps", ItemType.Switch, DefaultOptions.Traps.ToString()),
+            new MenuItem("MineCount", ItemType.Numeric, DefaultOptions.MineCount.ToString()),
+            new MenuItem("Gain1Count", ItemType.Numeric, DefaultOptions.Gain1Count.ToString()),
+            new MenuItem("ArtilleryCount", ItemType.Numeric, DefaultOptions.ArtilleryCount.ToString()),
+            new MenuItem("ArmageddonCount", ItemType.Numeric, DefaultOptions.ArmageddonCount.ToString()),
+            new MenuItem("", ItemType.Empty, "0"),
+            new MenuItem("Save & Exit", ItemType.Exit, "0"),
         };
         (var newOptions, var selected) = CreateMenu(options);
+
         //save to options.ini
+        DefaultOptions.PlayerName = newOptions[0].value;
+        DefaultOptions.Ships4 = int.Parse(newOptions[1].value);
+        DefaultOptions.Ships3 = int.Parse(newOptions[2].value);
+        DefaultOptions.Ships2 = int.Parse(newOptions[3].value);
+        DefaultOptions.Ships1 = int.Parse(newOptions[4].value);
+        DefaultOptions.PowerUps = (newOptions[5].value == "1" ? true : false);
+        DefaultOptions.Traps = (newOptions[6].value == "1" ? true : false);
+        DefaultOptions.MineCount = int.Parse(newOptions[7].value);
+        DefaultOptions.Gain1Count = int.Parse(newOptions[8].value);
+        DefaultOptions.ArtilleryCount = int.Parse(newOptions[9].value);
+        DefaultOptions.ArmageddonCount = int.Parse(newOptions[10].value);
+
+        DefaultOptions.Save();
     }
 
     public static void GameCreationMenu()
