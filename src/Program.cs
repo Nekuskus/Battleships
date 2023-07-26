@@ -36,7 +36,7 @@ public static class DefaultOptions
 
     public static void Save()
     {
-        using (var fs = new FileStream("options.txt", FileMode.Create))
+        using (var fs = new FileStream("options.ini", FileMode.Create))
         {
             using (var sw = new StreamWriter(fs))
             {
@@ -57,7 +57,7 @@ public static class DefaultOptions
     
     public static void Load()
     {
-        using (var fs = new FileStream("options.txt", FileMode.Open))
+        using (var fs = new FileStream("options.ini", FileMode.Open))
         {
             using (var sr = new StreamReader(fs))
             {
@@ -105,7 +105,6 @@ public static class DefaultOptions
                 }
             }
         }
-
     }
 }
 
@@ -113,6 +112,8 @@ class Program
 {
     public static void ExitGame()
     {
+        DefaultOptions.Save();
+        Console.WriteLine("Saved configuration. Exiting...");
     }
     public static void Main(string[] args)
     {
@@ -219,17 +220,28 @@ class Program
 
     public static void MainMenu()
     {
+    repeatmainmenu:
         Console.WriteLine("Main menu");
-        Console.Write("\n\n\n\n\n");
+        Console.Write("\n\n\n");
         var options = new MenuItem[] {
             new MenuItem("Start game", ItemType.Exit, 0),
             new MenuItem("Default options", ItemType.Exit, 0),
             new MenuItem("Exit game", ItemType.Exit, 0)
         };
-        var selected = CreateMenu(options);
+        (var newOptions, var selected) = CreateMenu(options);
 
-
-
+        if(selected == 0)
+        {
+            GameCreationMenu();
+        }
+        else if (selected == 1)
+        {
+            DefaultOptionsMenu();
+        } else if (selected == 2)
+        {
+            ExitGame();
+        }
+        goto repeatmainmenu;
     }
 
     public static void DefaultOptionsMenu()
