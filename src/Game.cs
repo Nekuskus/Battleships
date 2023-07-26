@@ -13,7 +13,7 @@ static class Extensions
     {
         if (box == Battleships.BoxStatus.Unknown) return " ";
         else if (box == Battleships.BoxStatus.ShipBox) return "S";
-        else if (box == Battleships.BoxStatus.ShotMiss) return "-";
+        else if (box == Battleships.BoxStatus.ShotMiss) return "x";
         else if (box == Battleships.BoxStatus.ShotHit) return "X";
         else if (box == Battleships.BoxStatus.MineTrap) return "M";
         else if (box == Battleships.BoxStatus.Artillery) return "a";
@@ -112,7 +112,7 @@ class Battleships
     {
         Unknown, // ' '
         ShipBox, // 'S' 
-        ShotMiss, // '-'
+        ShotMiss, // 'x'
         ShotHit, // 'X'
         MineTrap, // 'M'
         Artillery, // 'a'
@@ -328,67 +328,104 @@ class Battleships
 
     
     #region PowerUp and Trap methods
-    /*
+    
     public string GetPlayerFieldString()
     {
+        var sb = new StringBuilder();
+        
+        sb.AppendLine(new String('-', (int)FieldX+2));
+        for (int y = 0; y < FieldY; y++)
+        {
+            sb.Append('|');
+            for (int x = 0; x < FieldX; x++)
+            {
+                sb.Append(FieldPlayer[x, y].Print());
+            }
+            sb.AppendLine("|");
+        }
+        sb.AppendLine(new String('-', (int)FieldX+2));
 
+        return sb.ToString();
     }
 
     public string GetOpponentFieldString()
     {
 
+        var sb = new StringBuilder();
+        
+        sb.AppendLine(new String('-', (int)FieldX+2));
+        for (int y = 0; y < FieldY; y++)
+        {
+            sb.Append('|');
+            for (int x = 0; x < FieldX; x++)
+            {
+                sb.Append(FieldOpponent[x, y].Print());
+            }
+            sb.AppendLine("|");
+        }
+        sb.AppendLine(new String('-', (int)FieldX+2));
+
+        return sb.ToString();
     }
 
-    public string PrintPlayerField()
+    public void PrintPlayerField()
     {
         Console.WriteLine(GetPlayerFieldString());
     }
 
-    public string PrintOpponentField()
+    public void PrintOpponentField()
     {
         Console.WriteLine(GetOpponentFieldString());
     }
 
     public void PlayerPlaceMineTrap(Point p)
     {
+        if(!HasTraps) throw new InvalidOperationException("Players can't use traps in this session");
         Valid(p);
     }
 
     public void OpponentPlaceMineTrap(Point p)
     {
+        if(!HasTraps) throw new InvalidOperationException("Players can't use traps in this session");
         Valid(p);
     }
 
     public void PlayerPlaceGainOne(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
 
     public void OpponentPlaceGainOne(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
 
     public void PlayerPlaceArtillery(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
 
     public void OpponentPlaceArtillery(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
 
     public void PlayerPlaceArmageddon(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
 
     public void OpponentPlaceArmageddon(Point p)
     {
+        if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
         Valid(p);
     }
-    */
+    
     #endregion
 
     public void Valid(Point p)
