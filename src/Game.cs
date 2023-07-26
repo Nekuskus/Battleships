@@ -190,6 +190,17 @@ class Battleships
     {
         get => _fieldY;
     }
+    public string PlayerName
+    {
+        get;
+        set;
+    }
+    public string OpponentName
+    {
+        get;
+        set;
+    }
+
     #endregion
 
     #region Game initialization methods

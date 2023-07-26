@@ -129,14 +129,17 @@ class Program
         var options = new MenuItem[] {
             new MenuItem("Start game", ItemType.Exit, 0),
             new MenuItem("Default options", ItemType.Exit, 0),
-            new MenuItem("Exit game", ItemType.Exit, 0),
-            new MenuItem("This is a switch!", ItemType.Switch, 0),
-            new MenuItem("This is a numeric!", ItemType.Numeric, 0),
+            new MenuItem("Exit game", ItemType.Exit, 0)
         };
         var selected = CreateMenu(options);
 
 
 
+    }
+
+    public static void DefaultOptionsMenu()
+    {
+        //save to options.ini
     }
 
     public static void GameCreationMenu()
