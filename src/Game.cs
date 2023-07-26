@@ -14,7 +14,10 @@ static class Extensions
         if (box == Battleships.BoxStatus.Unknown) return " ";
         else if (box == Battleships.BoxStatus.ShipBox) return "S";
         else if (box == Battleships.BoxStatus.ShotMiss) return "-";
-        else /*if(box == Battleships.BoxStatus.ShotHit)*/ return "X";
+        else if (box == Battleships.BoxStatus.ShotHit) return "X";
+        else if (box == Battleships.BoxStatus.MineTrap) return "M";
+        else if (box == Battleships.BoxStatus.Artillery) return "a";
+        else /*if (box == Battleships.BoxStatus.Armageddon)*/ return "A";
     }
     public static string Print<T>(this T[] array)
     {
@@ -52,7 +55,7 @@ static class Extensions
         sb.Append(array[array.GetLength(0) - 1, array.GetLength(1) - 1].ToString());
         sb.Append(" ] ");
 
-        sb.Append(" ]");
+        sb.Append("]");
         return sb.ToString();
     }
     public static string Print(this Battleships.BoxStatus[] array)
@@ -70,7 +73,7 @@ static class Extensions
     }
     public static string Print(this Battleships.BoxStatus[,] array)
     {
-        var sb = new StringBuilder("[ ");
+        var sb = new StringBuilder("[");
 
         for (int i = 0; i < array.GetLength(0) - 1; i++)
         {
@@ -110,7 +113,10 @@ class Battleships
         Unknown, // ' '
         ShipBox, // 'S' 
         ShotMiss, // '-'
-        ShotHit // 'X'
+        ShotHit, // 'X'
+        MineTrap, // 'M'
+        Artillery, // 'a'
+        Armageddon // 'A'
     }
 
     public enum ShotReturn
@@ -320,6 +326,9 @@ class Battleships
         IsGameOver = false;
     }
 
+    
+    #region PowerUp and Trap methods
+    /*
     public string GetPlayerFieldString()
     {
 
@@ -350,10 +359,42 @@ class Battleships
         Valid(p);
     }
 
+    public void PlayerPlaceGainOne(Point p)
+    {
+        Valid(p);
+    }
+
+    public void OpponentPlaceGainOne(Point p)
+    {
+        Valid(p);
+    }
+
+    public void PlayerPlaceArtillery(Point p)
+    {
+        Valid(p);
+    }
+
+    public void OpponentPlaceArtillery(Point p)
+    {
+        Valid(p);
+    }
+
+    public void PlayerPlaceArmageddon(Point p)
+    {
+        Valid(p);
+    }
+
+    public void OpponentPlaceArmageddon(Point p)
+    {
+        Valid(p);
+    }
+    */
+    #endregion
+
     public void Valid(Point p)
     {
-        if(p.X >= FieldX || p.X < 0) throw new ArgumentOutOfRangeException($"The point's X field {p.X} is out of bounds.");
-        if(p.Y >= FieldY || p.Y < 0) throw new ArgumentOutOfRangeException($"The point's Y field {p.Y} is out of bounds.");
+        if (p.X >= FieldX || p.X < 0) throw new ArgumentOutOfRangeException($"The point's X field {p.X} is out of bounds.");
+        if (p.Y >= FieldY || p.Y < 0) throw new ArgumentOutOfRangeException($"The point's Y field {p.Y} is out of bounds.");
     }
 
     #endregion
