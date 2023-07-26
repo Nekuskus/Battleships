@@ -1,3 +1,4 @@
+using System.IO;
 record struct MenuItem(string text, ItemType type, int value);
 enum ItemType { Switch, Numeric, Exit }
 
@@ -18,11 +19,105 @@ static partial class Extensions
         }
     }
 }
+
+public static class DefaultOptions
+{
+    public static string? PlayerName = null;
+    public static int? Ships4 = null;
+    public static int? Ships3 = null;
+    public static int? Ships2 = null;
+    public static int? Ships1 = null;
+    public static bool? PowerUps = null;
+    public static bool? Traps = null;
+    public static int? MineCount = null;
+    public static int? Gain1Count = null;
+    public static int? ArtilleryCount = null;
+    public static int? ArmageddonCount = null;
+
+    public static void Save()
+    {
+        using (var fs = new FileStream("options.txt", FileMode.Create))
+        {
+            using (var sw = new StreamWriter(fs))
+            {
+                sw.WriteLine($"PlayerName={DefaultOptions.PlayerName}");
+                sw.WriteLine($"Ships4={DefaultOptions.Ships4}");
+                sw.WriteLine($"Ships3={DefaultOptions.Ships3}");
+                sw.WriteLine($"Ships2={DefaultOptions.Ships2}");
+                sw.WriteLine($"Ships1={DefaultOptions.Ships1}");
+                sw.WriteLine($"PowerUps={DefaultOptions.PowerUps}");
+                sw.WriteLine($"Traps={DefaultOptions.Traps}");
+                sw.WriteLine($"MineCount={DefaultOptions.MineCount}");
+                sw.WriteLine($"Gain1Count={DefaultOptions.Gain1Count}");
+                sw.WriteLine($"ArtilleryCount={DefaultOptions.ArtilleryCount}");
+                sw.WriteLine($"ArmageddonCount={DefaultOptions.ArmageddonCount}");
+            }
+        }
+    }
+    
+    public static void Load()
+    {
+        using (var fs = new FileStream("options.txt", FileMode.Open))
+        {
+            using (var sr = new StreamReader(fs))
+            {
+                while(!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine().Split('=');
+                    switch (line[0])
+                    {
+                        case "PlayerName":
+                            DefaultOptions.PlayerName = line[1];
+                            break;
+                        case "Ships4":
+                            DefaultOptions.Ships4 = int.Parse(line[1]);
+                            break;
+                        case "Ships3":
+                            DefaultOptions.Ships3 = int.Parse(line[1]);
+                            break;
+                        case "Ships2":
+                            DefaultOptions.Ships2 = int.Parse(line[1]);
+                            break;
+                        case "Ships1":
+                            DefaultOptions.Ships1 = int.Parse(line[1]);
+                            break;
+                        case "PowerUps":
+                            DefaultOptions.PowerUps = bool.Parse(line[1]);
+                            break;
+                        case "Traps":
+                            DefaultOptions.Traps = bool.Parse(line[1]);
+                            break;
+                        case "MineCount":
+                            DefaultOptions.MineCount = int.Parse(line[1]);
+                            break;
+                        case "Gain1Count":
+                            DefaultOptions.Gain1Count = int.Parse(line[1]);
+                            break;
+                        case "ArtilleryCount":
+                            DefaultOptions.ArtilleryCount = int.Parse(line[1]);
+                            break;
+                        case "ArmageddonCount":
+                            DefaultOptions.ArmageddonCount = int.Parse(line[1]);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+    }
+}
+
 class Program
 {
+    public static void ExitGame()
+    {
+    }
     public static void Main(string[] args)
     {
         Console.WriteLine("Battleships v0.01");
+        if(File.Exists("options.txt")) DefaultOptions.Load();
         MainMenu();
     }
 
@@ -73,7 +168,7 @@ class Program
                     if (options[offset].type == ItemType.Numeric)
                     {
                         Console.CursorLeft = 1;
-                        Console.Write(new String(' ', Console.BufferWidth-1));
+                        Console.Write(new String(' ', Console.BufferWidth - 1));
                         Console.CursorLeft = 1;
                         options[offset].value += 1;
                         Console.Write(options[offset].Print());
@@ -83,7 +178,7 @@ class Program
                     if (options[offset].type == ItemType.Numeric)
                     {
                         Console.CursorLeft = 1;
-                        Console.Write(new String(' ', Console.BufferWidth-1));
+                        Console.Write(new String(' ', Console.BufferWidth - 1));
                         Console.CursorLeft = 1;
                         options[offset].value -= 1;
                         Console.Write(options[offset].Print());
@@ -114,7 +209,7 @@ class Program
         }
         Console.CursorTop -= (offset + 1);
 
-        Console.WriteLine($"Selected option {offset+1}: {options[offset].text}");
+        Console.WriteLine($"Selected option {offset + 1}: {options[offset].text}");
 
 
         Console.CursorVisible = true;
