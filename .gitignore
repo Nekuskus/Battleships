@@ -350,4 +350,4 @@ MigrationBackup/
 .ionide/
 
 
-**/options.txt
+**/options.ini

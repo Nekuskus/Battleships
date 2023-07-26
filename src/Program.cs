@@ -114,6 +114,7 @@ class Program
     {
         DefaultOptions.Save();
         Console.WriteLine("Saved configuration. Exiting...");
+        Environment.Exit(0);
     }
     public static void Main(string[] args)
     {
@@ -122,10 +123,12 @@ class Program
         MainMenu();
     }
 
-    public static (MenuItem[] options, int selected) CreateMenu(MenuItem[] options)
+    public static (MenuItem[] options, int selected) CreateMenu(MenuItem[] options, int initialPos = 0)
     {
+        if(!(initialPos < options.Length)) throw new ArgumentOutOfRangeException("Initial cursor position out of bounds.");
+
         Console.CursorVisible = false;
-        int offset = 0;
+        int offset = initialPos;
         // Write options
         for (int i = 0; i < options.Length - 1; i++)
         {
@@ -134,7 +137,7 @@ class Program
         Console.Write(' ' + options[options.Length - 1].Print());
 
         // Create cursor
-        Console.CursorTop = Console.CursorTop - options.Length + 1;
+        Console.CursorTop = Console.CursorTop - options.Length + 1 + offset;
         Console.CursorLeft = 0;
         Console.Write('>');
 
@@ -220,6 +223,7 @@ class Program
 
     public static void MainMenu()
     {
+        int initpos = 0;
     repeatmainmenu:
         Console.WriteLine("Main menu");
         Console.Write("\n\n\n");
@@ -228,7 +232,7 @@ class Program
             new MenuItem("Default options", ItemType.Exit, 0),
             new MenuItem("Exit game", ItemType.Exit, 0)
         };
-        (var newOptions, var selected) = CreateMenu(options);
+        (var newOptions, var selected) = CreateMenu(options, initpos);
 
         if(selected == 0)
         {
@@ -241,6 +245,8 @@ class Program
         {
             ExitGame();
         }
+        
+        initpos = selected;
         goto repeatmainmenu;
     }
 
