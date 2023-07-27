@@ -343,18 +343,20 @@ class Battleships
     public string GetPlayerFieldString()
     {
         var sb = new StringBuilder();
-        
-        sb.AppendLine(new String('-', (int)FieldX+2));
+        var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        sb.AppendLine("   " + string.Join("", alphabet.Take(Convert.ToInt32(FieldX))));
+        sb.AppendLine("  " + new String('-', (int)FieldX+2));
         for (int y = 0; y < FieldY; y++)
         {
-            sb.Append('|');
+            // Prepend line number and a space if needed. Breaks for lines above 99.
+            sb.Append($"{(y+1).ToString()}{((y+1).ToString().Length == 1 ? " " : "")}|");
             for (int x = 0; x < FieldX; x++)
             {
                 sb.Append(FieldPlayer[x, y].Print());
             }
             sb.AppendLine("|");
         }
-        sb.AppendLine(new String('-', (int)FieldX+2));
+        sb.Append("  " + new String('-', (int)FieldX+2));
 
         return sb.ToString();
     }

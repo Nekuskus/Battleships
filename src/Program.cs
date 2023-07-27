@@ -58,14 +58,14 @@ public static class DefaultOptions
             }
         }
     }
-    
+
     public static void Load()
     {
         using (var fs = new FileStream("options.ini", FileMode.Open))
         {
             using (var sr = new StreamReader(fs))
             {
-                while(!sr.EndOfStream)
+                while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine()!.Split('=');
                     switch (line[0])
@@ -124,15 +124,15 @@ class Program
     {
         Console.CursorVisible = false;
         Console.WriteLine("Battleships v0.01");
-        if(File.Exists("options.ini")) DefaultOptions.Load();
+        if (File.Exists("options.ini")) DefaultOptions.Load();
         MainMenu();
     }
 
     public static (MenuItem[] options, int selected) CreateMenu(MenuItem[] options, int initialPos = 0)
     {
-        if(!(initialPos < options.Length)) throw new ArgumentOutOfRangeException("Initial cursor position out of bounds.");
+        if (!(initialPos < options.Length)) throw new ArgumentOutOfRangeException("Initial cursor position out of bounds.");
 
-        
+
         int offset = initialPos;
         // Write options
         for (int i = 0; i < options.Length - 1; i++)
@@ -241,7 +241,46 @@ class Program
 
         return (options, offset);
     }
+    
+    //if Point is null then menu was exited, try again
+    public static Point? CreateSelectFieldBoxMenu(ref Battleships game)
+    {
+        // TOOD: if pressed ESC: print "Exiting box select menu", return null.
+                
+        string board = game.GetPlayerFieldString();
 
+        // Prepend board with proper indentation and symbols
+        string[] boardArr = board.Split('\n');
+        for (var i = 0; i < boardArr.Length; i++)
+        {
+            boardArr[i] = string.Join("", boardArr[i].Prepend(' ').Prepend(' '));
+        }
+        boardArr = (string[])boardArr.Prepend("\n");
+
+        // Print here
+        
+        //set curleft to 1, curtop to calculated by taking game Y, make 2 offset vars
+
+        // Render cursors for both dimensions (initial position is always (0,0) == (A, 1))
+        
+
+    }
+    public static void CreateShipPlaceMenu(ref Battleships game, int shipLength)
+    {
+        if (!(shipLength < game.FieldX && shipLength < game.FieldY))
+            throw new ArgumentOutOfRangeException("Ship does not fit on the field in either direction.");
+        
+        Console.WriteLine($"Ship placement, length {shipLength}\n");
+        
+        Point? startPoint = CreateSelectFieldBoxMenu(ref game);
+        
+        if (startPoint == null)
+        {
+            Console.WriteLine("Exiting ship placement menu.");
+            return;
+        }
+        
+    }
     public static void MainMenu()
     {
         int initpos = 0;
@@ -255,18 +294,19 @@ class Program
         };
         (var newOptions, var selected) = CreateMenu(options, initpos);
 
-        if(selected == 0)
+        if (selected == 0)
         {
             GameCreationMenu();
         }
         else if (selected == 1)
         {
             DefaultOptionsMenu();
-        } else if (selected == 2)
+        }
+        else if (selected == 2)
         {
             ExitGame();
         }
-        
+
         initpos = selected;
         goto repeatmainmenu;
     }
