@@ -198,6 +198,11 @@ class Program
                         options[offset].value = (int.Parse(options[offset].value) + 1).ToString();
                         Console.Write(options[offset].Print());
                     }
+                    else if (options[offset].type == ItemType.Text)
+                    {
+                        // move cursor here but only within bounds after options[offset].text and up to the length of the current string saved in the value, up to 20 chars.
+                        // save the value too by inserting characters at the proper offset
+                    }
                     break;
                 case ConsoleKey.LeftArrow:
                     if (options[offset].type == ItemType.Numeric)
@@ -208,6 +213,11 @@ class Program
                         options[offset].value = (int.Parse(options[offset].value) - 1).ToString();
                         Console.Write(options[offset].Print());
 
+                    }
+                    else if (options[offset].type == ItemType.Text)
+                    {
+                        // move cursor here but only within bounds after options[offset].text and up to the length of the current string saved in the value, up to 20 chars.
+                        // save the value too by inserting characters at the proper offset
                     }
                     break;
                 case ConsoleKey.Enter:
