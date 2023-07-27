@@ -262,7 +262,7 @@ class Program
         //set curleft to 1, curtop to calculated by taking game Y, make 2 offset vars
 
         // Render cursors for both dimensions (initial position is always (0,0) == (A, 1))
-        
+
 
     }
     public static void CreateShipPlaceMenu(ref Battleships game, int shipLength)
@@ -283,7 +283,7 @@ class Program
     }
     public static void MainMenu()
     {
-        int initpos = 0;
+        int initPos = 0;
     repeatmainmenu:
         Console.WriteLine("Main menu");
         Console.Write("\n\n\n");
@@ -292,7 +292,7 @@ class Program
             new MenuItem("Default options", ItemType.Exit, "0"),
             new MenuItem("Exit game", ItemType.Exit, "0")
         };
-        (var newOptions, var selected) = CreateMenu(options, initpos);
+        (var newOptions, var selected) = CreateMenu(options, initPos);
 
         if (selected == 0)
         {
@@ -307,7 +307,7 @@ class Program
             ExitGame();
         }
 
-        initpos = selected;
+        initPos = selected;
         goto repeatmainmenu;
     }
 
