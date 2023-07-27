@@ -209,11 +209,11 @@ class Battleships
     {
         Valid(start);
         Valid(end);
-        if ((start.X == end.X && start.Y == end.Y) || (start.X != end.X && start.Y != end.Y))
-            throw new ArgumentException("Ship start and end must align in one dimension.");
+        if (start.X != end.X && start.Y != end.Y)
+            throw new ArgumentException("Ship start and end must align in at least one dimension.");
 
         if (IsGameOver) throw new InvalidOperationException("Ships cannot be placed if the game is over");
-
+        
         if (start.X == end.X)
         {
             if (start.Y > end.Y) (start.Y, end.Y) = (end.Y, start.Y);
@@ -222,8 +222,8 @@ class Battleships
                 _fieldPlayer[start.X, y] = BoxStatus.ShipBox;
             }
         }
-        else
-        { // if(start.Y == end.Y) {
+        else // if(start.Y == end.Y)
+        {    // no need to write a separate handler for (1) ships, since this loop works fine for them
             if (start.X > end.X) (start.X, end.X) = (end.X, start.X);
             for (int x = start.X; x <= end.X; x++)
             {
@@ -235,8 +235,8 @@ class Battleships
     {
         Valid(start);
         Valid(end);
-        if ((start.X == end.X && start.Y == end.Y) || (start.X != end.X && start.Y != end.Y))
-            throw new ArgumentException("Ship start and end must align in one dimension.");
+        if (start.X != end.X && start.Y != end.Y)
+            throw new ArgumentException("Ship start and end must align in at least one dimension.");
 
         if (IsGameOver) throw new InvalidOperationException("Ships cannot be placed if the game is over");
 
@@ -248,8 +248,8 @@ class Battleships
                 _fieldOpponent[start.X, y] = BoxStatus.ShipBox;
             }
         }
-        else
-        { // if(start.Y == end.Y) {
+        else // if(start.Y == end.Y)
+        {    // no need to write a separate handler for (1) ships, since this loop works fine for them
             if (start.X > end.X) (start.X, end.X) = (end.X, start.X);
             for (int x = start.X; x <= end.X; x++)
             {
