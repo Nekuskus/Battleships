@@ -130,6 +130,7 @@ class Program
 
     public static (MenuItem[] options, int selected) CreateMenu(MenuItem[] options, int initialPos = 0)
     {
+        Console.CursorVisible = false;
         if (!(initialPos < options.Length)) throw new ArgumentOutOfRangeException("Initial cursor position out of bounds.");
 
 
@@ -154,6 +155,7 @@ class Program
             switch (key)
             {
                 case ConsoleKey.UpArrow:
+                    Console.CursorVisible = false;
                     if (offset - 1 >= 0)
                     {
                         Console.SetCursorPosition(0, Console.CursorTop);
@@ -172,6 +174,7 @@ class Program
                     }
                     break;
                 case ConsoleKey.DownArrow:
+                    Console.CursorVisible = false;
                     if (offset + 1 < options.Length)
                     {
                         Console.SetCursorPosition(0, Console.CursorTop);
@@ -190,6 +193,7 @@ class Program
                     }
                     break;
                 case ConsoleKey.RightArrow:
+                    Console.CursorVisible = false;
                     if (options[offset].type == ItemType.Numeric)
                     {
                         Console.CursorLeft = 1;
@@ -200,6 +204,7 @@ class Program
                     }
                     else if (options[offset].type == ItemType.Text)
                     {
+                        Console.CursorVisible = true;
                         // move cursor here but only within bounds after options[offset].text and up to the length of the current string saved in the value, up to 20 chars.
                         // save the value too by inserting characters at the proper offset
                     }
@@ -207,6 +212,7 @@ class Program
                 case ConsoleKey.LeftArrow:
                     if (options[offset].type == ItemType.Numeric)
                     {
+                        Console.CursorVisible = false;
                         Console.CursorLeft = 1;
                         Console.Write(new String(' ', Console.BufferWidth - 2));
                         Console.CursorLeft = 1;
@@ -216,11 +222,13 @@ class Program
                     }
                     else if (options[offset].type == ItemType.Text)
                     {
+                        Console.CursorVisible = true;
                         // move cursor here but only within bounds after options[offset].text and up to the length of the current string saved in the value, up to 20 chars.
                         // save the value too by inserting characters at the proper offset
                     }
                     break;
                 case ConsoleKey.Enter:
+                    Console.CursorVisible = false;
                     if (options[offset].type == ItemType.Switch)
                     {
                         options[offset].value = (options[offset].value == "0" ? "1" : "0");
@@ -230,8 +238,21 @@ class Program
                     }
                     break;
                 default:
-                    Console.CursorLeft = 1;
-                    Console.Write(options[offset].Print());
+                    if (options[offset].type == ItemType.Text)
+                    {
+                        Console.CursorVisible = true;
+                        //handle typing here and limit max characters to console width - some offset for var name, spaces and cursor
+
+                        //this is placeholder code:
+                        Console.CursorLeft = 1;
+                        Console.Write(options[offset].Print());
+                    }
+                    else
+                    {
+                        Console.CursorVisible = false;
+                        Console.CursorLeft = 1;
+                        Console.Write(options[offset].Print());
+                    }
                     break;
             }
             key = Console.ReadKey(false).Key;
@@ -251,12 +272,12 @@ class Program
 
         return (options, offset);
     }
-    
+
     //if Point is null then menu was exited, try again
     public static Point? CreateSelectFieldBoxMenu(ref Battleships game)
     {
+        Console.CursorVisible = false;
         // TOOD: if pressed ESC: print "Exiting box select menu", return null.
-                
         string board = game.GetPlayerFieldString();
 
         // Prepend board with proper indentation and symbols
@@ -265,31 +286,116 @@ class Program
         {
             boardArr[i] = string.Join("", boardArr[i].Prepend(' ').Prepend(' '));
         }
-        boardArr = (string[])boardArr.Prepend("\n");
+        boardArr = boardArr.Prepend("\n").ToArray();
 
-        // Print here
-        
-        //set curleft to 1, curtop to calculated by taking game Y, make 2 offset vars
+        // Print the board
+        board = string.Join('\n', boardArr);
+        Console.Write(board);
+
+        // Print lower cursor
+        Console.CursorLeft = 1;
+        Console.CursorTop = Console.WindowHeight - boardArr.Length + 3;
+        Console.Write('>');
+
+        // Print upper cursor
+        Console.CursorLeft = 5;
+        Console.CursorTop = Console.WindowHeight - boardArr.Length;
+        Console.Write('V');
+        int offsetLower = 0;
+        int offsetUpper = 0;
 
         // Render cursors for both dimensions (initial position is always (0,0) == (A, 1))
+        void RemoveUpperCursor(ref Battleships g)
+        {
+            Console.CursorTop = Console.WindowHeight - boardArr.Length;
+            Console.CursorLeft = 5 + offsetUpper;
+            Console.Write(new String(' ', Convert.ToInt32(g.FieldX)));
+        }
 
+        void RemoveLowerCursor(ref Battleships g)
+        {
+            for(int i = 0; i < g.FieldY; i++)
+            {
+                Console.CursorTop = Console.WindowHeight - boardArr.Length + 3 + i;
+                Console.CursorLeft = 1;
+                Console.Write('>');
+            }
+        }
 
+        // Move cursor
+        var key = Console.ReadKey(false).Key;
+        Console.CursorVisible = false;
+
+        while (key != ConsoleKey.Escape || key != ConsoleKey.Enter)
+        {
+            switch (key)
+            {
+                case ConsoleKey.LeftArrow:
+                    if (offsetUpper - 1 >= 0)
+                    {
+                        Console.CursorVisible = false;
+                        RemoveUpperCursor(ref game);
+                        offsetUpper -= 1;
+                        Console.CursorTop = Console.WindowHeight - boardArr.Length;
+                        Console.CursorLeft = 5 + offsetUpper;
+                        Console.Write('V');
+                    }
+                    break;
+                case ConsoleKey.RightArrow:
+                    if (offsetUpper + 1 < 4 + game.FieldX)
+                    {
+                        Console.CursorVisible = false;
+                        RemoveUpperCursor(ref game);
+                        offsetUpper += 1;
+                        Console.CursorTop = Console.WindowHeight - boardArr.Length;
+                        Console.CursorLeft = 5 + offsetUpper;
+                        Console.Write('V');
+                    }
+                    break;
+                case ConsoleKey.UpArrow:
+                    if (offsetLower - 1 >= 0)
+                    {
+                        Console.CursorVisible = false;
+                        RemoveLowerCursor(ref game);
+                        offsetLower -= 1;
+                        Console.CursorTop = Console.WindowHeight - boardArr.Length + 3 + offsetLower;
+                        Console.CursorLeft = 1;
+                        Console.Write('>');
+                    }
+                    break;
+                case ConsoleKey.DownArrow:
+                    if (offsetLower + 1 >= game.FieldY - 1)
+                    {
+                        Console.CursorVisible = false;
+                        RemoveLowerCursor(ref game);
+                        offsetLower += 1;
+                        Console.CursorTop = Console.WindowHeight - boardArr.Length + 3 + offsetLower;
+                        Console.CursorLeft = 1;
+                        Console.Write('>');
+                    }
+                    break;
+            }
+            key = Console.ReadKey(false).Key;
+        }
+        if (key == ConsoleKey.Enter)
+            return new Point(offsetLower, offsetUpper);
+        else return null;
     }
     public static void CreateShipPlaceMenu(ref Battleships game, int shipLength)
     {
         if (!(shipLength < game.FieldX && shipLength < game.FieldY))
             throw new ArgumentOutOfRangeException("Ship does not fit on the field in either direction.");
-        
+
         Console.WriteLine($"Ship placement, length {shipLength}\n");
-        
+
         Point? startPoint = CreateSelectFieldBoxMenu(ref game);
-        
+
         if (startPoint == null)
         {
             Console.WriteLine("Exiting ship placement menu.");
             return;
         }
-        
+
     }
     public static void MainMenu()
     {
@@ -323,6 +429,7 @@ class Program
 
     public static void DefaultOptionsMenu()
     {
+        Console.CursorVisible = false;
         Console.WriteLine("Default options");
         Console.Write("\n\n\n");
         var options = new MenuItem[] {
@@ -360,6 +467,8 @@ class Program
 
     public static void GameCreationMenu()
     {
-
+        Console.CursorVisible = false;
+        var game = new Battleships();
+        CreateSelectFieldBoxMenu(ref game);
     }
 }

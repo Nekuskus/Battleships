@@ -11,13 +11,13 @@ static partial class Extensions
 
     public static string Print(this Battleships.BoxStatus box)
     {
-        if (box == Battleships.BoxStatus.Unknown) return " ";
-        else if (box == Battleships.BoxStatus.ShipBox) return "S";
+        if (box == Battleships.BoxStatus.ShipBox) return "S";
         else if (box == Battleships.BoxStatus.ShotMiss) return "x";
         else if (box == Battleships.BoxStatus.ShotHit) return "X";
         else if (box == Battleships.BoxStatus.MineTrap) return "M";
         else if (box == Battleships.BoxStatus.Artillery) return "a";
-        else /*if (box == Battleships.BoxStatus.Armageddon)*/ return "A";
+        else if (box == Battleships.BoxStatus.Armageddon) return "A";
+        else /*if (box == Battleships.BoxStatus.Unknown)*/ return " ";
     }
     public static string Print<T>(this T[] array)
     {
@@ -207,8 +207,8 @@ class Battleships
 
     public void PlaceShipPlayer(Point start, Point end)
     {
-        Valid(start);
-        Valid(end);
+        Validate(start);
+        Validate(end);
         if (start.X != end.X && start.Y != end.Y)
             throw new ArgumentException("Ship start and end must align in at least one dimension.");
 
@@ -233,8 +233,8 @@ class Battleships
     }
     public void PlaceShipOpponent(Point start, Point end)
     {
-        Valid(start);
-        Valid(end);
+        Validate(start);
+        Validate(end);
         if (start.X != end.X && start.Y != end.Y)
             throw new ArgumentException("Ship start and end must align in at least one dimension.");
 
@@ -264,7 +264,7 @@ class Battleships
 
     public ShotReturn TryShoot(Point p)
     {
-        Valid(p);
+        Validate(p);
         if (!IsPlayerTurn) throw new InvalidOperationException("A player can't move during the other player's turn.");
         if (IsGameOver) throw new InvalidOperationException("Shots cannot be made after the game is over.");
 
@@ -284,7 +284,7 @@ class Battleships
 
     public ShotReturn EnemyShot(Point p)
     {
-        Valid(p);
+        Validate(p);
         if (IsPlayerTurn) throw new InvalidOperationException("A player can't move during the other player's turn.");
         if (IsGameOver) throw new InvalidOperationException("Shots cannot be made after the game is over.");
 
@@ -394,54 +394,54 @@ class Battleships
     public void PlayerPlaceMineTrap(Point p)
     {
         if(!HasTraps) throw new InvalidOperationException("Players can't use traps in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void OpponentPlaceMineTrap(Point p)
     {
         if(!HasTraps) throw new InvalidOperationException("Players can't use traps in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void PlayerPlaceGainOne(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void OpponentPlaceGainOne(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void PlayerPlaceArtillery(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void OpponentPlaceArtillery(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void PlayerPlaceArmageddon(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
 
     public void OpponentPlaceArmageddon(Point p)
     {
         if(!HasPowerUps) throw new InvalidOperationException("Players can't use powerups in this session");
-        Valid(p);
+        Validate(p);
     }
     
     #endregion
 
-    public void Valid(Point p)
+    public void Validate(Point p)
     {
         if (p.X >= FieldX || p.X < 0) throw new ArgumentOutOfRangeException($"The point's X field {p.X} is out of bounds.");
         if (p.Y >= FieldY || p.Y < 0) throw new ArgumentOutOfRangeException($"The point's Y field {p.Y} is out of bounds.");
